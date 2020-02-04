@@ -1,5 +1,6 @@
 const express = require("express");
 const bcrypt = require("bcrypt");
+const _ = require("underscore");
 const bodyParser = require("body-parser");
 const app = express();
 // ------------------------- User Model
@@ -31,7 +32,7 @@ app.get("/user", (req, res) => {
 			if (err) {
 				return res.status(400).json({
 					ok: false,
-					err
+					message: err
 				});
 			}
 			res.json({
@@ -42,11 +43,27 @@ app.get("/user", (req, res) => {
 	})
 	.put("/user/:id", (req, res) => {
 		const paramId = req.params.id;
-		if (paramId) {
-			res.json({ type: "put", id: paramId });
-		} else {
-			res.status(400).json({ message: paramIsRequired("id") });
-		}
+		const body = _.pick(req.body, [
+			"name",
+			"email",
+			"image",
+			"role",
+			"state"
+		]);
+		User.findByIdAndUpdate(
+			paramId,
+			body,
+			{
+				new: true /** Opción para devolver el dato actualizado al frontend*/,
+				runValidators: true /** ejecutar validaciones de  definidas en el esquema */
+			},
+			(err, userDB) => {
+				if (err) {
+					return res.status(400).json({ ok: false, message: err });
+				}
+				res.json({ ok: true, user: userDB });
+			}
+		);
 	})
 	.delete("/user", (req, res) => {
 		res.json({ type: "delete" });
