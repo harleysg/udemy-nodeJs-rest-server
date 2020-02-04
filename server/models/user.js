@@ -29,6 +29,13 @@ const userSchema = new Schema({
 	google: { type: Boolean, default: false }
 });
 
+userSchema.methods.toJSON = function() {
+	let user = this;
+	const userObject = user.toObject();
+	delete userObject.password;
+	return userObject;
+};
+
 userSchema.plugin(uniqueValidator, {
 	message: "{PATH} debe ser unico."
 });

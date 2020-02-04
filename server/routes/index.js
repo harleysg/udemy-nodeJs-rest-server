@@ -1,4 +1,5 @@
 const express = require("express");
+const bcrypt = require("bcrypt");
 const bodyParser = require("body-parser");
 const app = express();
 // ------------------------- User Model
@@ -22,7 +23,7 @@ app.get("/user", (req, res) => {
 		let user = new User({
 			name: body.name,
 			email: body.email,
-			password: body.password,
+			password: bcrypt.hashSync(body.password, 10),
 			role: body.role
 		});
 
@@ -38,18 +39,6 @@ app.get("/user", (req, res) => {
 				data: userDB
 			});
 		});
-
-		// if (
-		// 	body === undefined ||
-		// 	body.name === undefined ||
-		// 	body.age === undefined
-		// ) {
-		// 	res.status(400).json({
-		// 		message: paramIsRequired("name ó age")
-		// 	});
-		// } else {
-		// 	res.json({ type: "post", data: body });
-		// }
 	})
 	.put("/user/:id", (req, res) => {
 		const paramId = req.params.id;
