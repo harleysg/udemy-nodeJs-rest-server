@@ -1,38 +1,21 @@
 // -------------------------
 require("./config");
 // -------------------------
-const PORT = process.env.PORT;
-// -------------------------
 const express = require("express");
-const bodyParser = require("body-parser");
 const app = express();
-// ------------------------- MIDDELWARES
-// parse application/x-www-form-urlencoded + parse application/json
-app.use(bodyParser.urlencoded({ extended: false })).use(bodyParser.json());
-// -------------------------
-app.get("/user", (req, res) => {
-	res.json({ type: "get" });
-})
-	.post("/user", (req, res, next) => {
-		const body = req.body;
-		if (body.name === undefined || body.age === undefined) {
-			res.status(400).json({
-				message: paramIsRequired("name ó age")
-			});
-		} else {
-			res.json({ type: "post", data: body });
-		}
-		function paramIsRequired(params) {
-			return `El parametro ${params} es requerido.`;
-		}
-	})
-	.put("/user/:id", (req, res) => {
-		const paramId = req.params.id;
-		res.json({ type: "put", id: paramId });
-	})
-	.delete("/user", (req, res) => {
-		res.json({ type: "delete" });
-	})
-	.listen(PORT, () => {
-		console.log(`Listen port: ${PORT}`);
-	});
+// ------------------------- EXPRESS
+app.use(require("./routes"));
+// ------------------------- MONGODB
+const mongoose = require("mongoose");
+mongoose.set("useUnifiedTopology", true); // DeprecationWarning: current Server Discovery and Monitoring engine is deprecated, and will be removed in a future version. To use the new Server Discover and Monitoring engine, pass option { useUnifiedTopology: true } to the MongoClient constructor.
+mongoose.set("useCreateIndex", true); // DeprecationWarning: collection.ensureIndex is deprecated. Use createIndexes instead.
+mongoose.set("useNewUrlParser", true); // DeprecationWarning: current URL string parser is deprecated, and will be removed in a future version. To use the new parser, pass option { useNewUrlParser: true } to MongoClient.connect.
+// ------------------------- define Mongoose DB
+mongoose.connect(
+	"mongodb://localhost:27017/cafe",
+	{ useNewUrlParser: true },
+	(err, res) => {
+		if (err) throw err;
+		console.log(`Base de datos Online`);
+	}
+);
