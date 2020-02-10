@@ -3,8 +3,8 @@ const bcrypt = require("bcrypt");
 const _ = require("underscore");
 const bodyParser = require("body-parser");
 const app = express();
-// ------------------------- User Model
-const User = require("../models/user");
+// ------------------------- UserModel Model
+const UserModel = require("../models/user");
 // ------------------------- MIDDELWARES
 // parse application/x-www-form-urlencoded + parse application/json
 app.use(bodyParser.urlencoded({ extended: false })).use(bodyParser.json());
@@ -16,12 +16,29 @@ function paramIsRequired(params) {
 }
 // ------------------------- ROUTES
 app.get("/user", (req, res) => {
-	res.json({ type: "get" });
+	const from = Number(req.query.from) || 0;
+	const limit = Number(req.query.limit) || 10;
+	const fields = req.query.fields || "";
+
+	UserModel.find({}, fields)
+		.skip(from)
+		.limit(limit)
+		.exec((err, users) => {
+			if (err)
+				return res.status(400).json({ success: false, message: err });
+			UserModel.count({}, (err, count) => {
+				res.json({
+					success: true,
+					count,
+					users
+				});
+			});
+		});
 })
 	.post("/user", (req, res, next) => {
 		const body = req.body;
 
-		let user = new User({
+		let user = new UserModel({
 			name: body.name,
 			email: body.email,
 			password: bcrypt.hashSync(body.password, 10),
@@ -31,18 +48,18 @@ app.get("/user", (req, res) => {
 		user.save((err, userDB) => {
 			if (err) {
 				return res.status(400).json({
-					ok: false,
+					success: false,
 					message: err
 				});
 			}
 			res.json({
-				ok: true,
+				success: true,
 				data: userDB
 			});
 		});
 	})
-	.put("/user/:id", (req, res) => {
-		const paramId = req.params.id;
+	.put("/user", (req, res) => {
+		const paramId = req.query.id;
 		const body = _.pick(req.body, [
 			"name",
 			"email",
@@ -50,7 +67,7 @@ app.get("/user", (req, res) => {
 			"role",
 			"state"
 		]);
-		User.findByIdAndUpdate(
+		UserModel.findByIdAndUpdate(
 			paramId,
 			body,
 			{
@@ -59,9 +76,11 @@ app.get("/user", (req, res) => {
 			},
 			(err, userDB) => {
 				if (err) {
-					return res.status(400).json({ ok: false, message: err });
+					return res
+						.status(400)
+						.json({ success: false, message: err });
 				}
-				res.json({ ok: true, user: userDB });
+				res.json({ success: true, user: userDB });
 			}
 		);
 	})
