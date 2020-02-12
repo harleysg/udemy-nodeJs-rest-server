@@ -18,15 +18,16 @@ function paramIsRequired(params) {
 app.get("/user", (req, res) => {
 	const from = Number(req.query.from) || 0;
 	const limit = Number(req.query.limit) || 10;
+	const status = req.query.status || true;
 	const fields = req.query.fields || "";
 
-	UserModel.find({}, fields)
+	UserModel.find({ state: status }, fields)
 		.skip(from)
 		.limit(limit)
 		.exec((err, users) => {
 			if (err)
 				return res.status(400).json({ success: false, message: err });
-			UserModel.count({}, (err, count) => {
+			UserModel.countDocuments({ state: status }, (err, count) => {
 				res.json({
 					success: true,
 					count,
@@ -54,6 +55,7 @@ app.get("/user", (req, res) => {
 			}
 			res.json({
 				success: true,
+				message: "User saved",
 				data: userDB
 			});
 		});
@@ -84,8 +86,58 @@ app.get("/user", (req, res) => {
 			}
 		);
 	})
-	.delete("/user", (req, res) => {
-		res.json({ type: "delete" });
+	.delete("/deleteUser/:id", (req, res) => {
+		const ID = req.params.id;
+		if (!ID) {
+			return res.status(400).json({
+				success: false,
+				message: paramIsRequired("id")
+			});
+		}
+		UserModel.findByIdAndRemove(ID, (err, userDeleted) => {
+			if (err) {
+				return res.status(400).json({
+					success: false,
+					message: err
+				});
+			}
+			if (!userDeleted) {
+				return res.status(400).json({
+					success: false,
+					message: "User dont found"
+				});
+			}
+			res.json({
+				success: true,
+				user: userDeleted
+			});
+		});
+	})
+	.delete("/disableUser/:id", (req, res) => {
+		const ID = req.params.id;
+		if (!ID) {
+			return res.status(400).json({
+				success: false,
+				message: paramIsRequired("id")
+			});
+		}
+		UserModel.findByIdAndUpdate(
+			ID,
+			{ state: false },
+			{ new: true },
+			(err, user) => {
+				if (err) {
+					return res
+						.status(400)
+						.json({ success: false, message: err });
+				}
+
+				res.json({
+					success: true,
+					message: `User is already disabled`
+				});
+			}
+		);
 	})
 	.listen(PORT, () => {
 		console.log(`Listen port: ${PORT}`);
