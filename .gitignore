@@ -1,6 +1,6 @@
 
-# Created by https://www.gitignore.io/api/node,video,adobe,audio,macos,windows,visualstudiocode
-# Edit at https://www.gitignore.io/?templates=node,video,adobe,audio,macos,windows,visualstudiocode
+# Created by https://www.gitignore.io/api/node,video,adobe,audio,macos,windows,visualstudiocode,dotenv
+# Edit at https://www.gitignore.io/?templates=node,video,adobe,audio,macos,windows,visualstudiocode,dotenv
 
 ### Adobe ###
 # Adobe Source Files
@@ -185,4 +185,8 @@ $RECYCLE.BIN/
 # Ignore all local history of files
 .history
 
-# End of https://www.gitignore.io/api/node,video,adobe,audio,macos,windows,visualstudiocode
+### dotenv ###
+.env
+*.env
+
+# End of https://www.gitignore.io/api/node,video,adobe,audio,macos,windows,visualstudiocode,dotenv
